@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion de Stock de Gaz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+        }
+        #history {
+            margin-top: 20px;
+        }
+        .history-entry {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ets MUM LOKADI</h1>
+        <h2>Gestionnaire de stock</h2>
+        <label for="stock-initial">Stock initial (kg):</label>
+        <input type="number" id="stock-initial" placeholder="Entrez le stock initial" step="0.01">
+        <label for="quantite-enlever">Quantité à enlever (kg):</label>
+        <input type="number" id="quantite-enlever" placeholder="Entrez la quantité à enlever" step="0.01">
+        <button onclick="enleverGaz()">Enlever </button>
+        <p id="resultat"></p>
+        <p id="bouteilles-utilisees"></p>
+        <div id="history">
+            <h3>Historique des retraits :</h3>
+            <div id="history-entries"></div>
+        </div>
+    </div>
+    <script>
+        let stock = 0;
+        let bouteillesUtilisees = 0;
+        const historyEntries = [];
+
+        function enleverGaz() {
+            const stockInitial = parseFloat(document.getElementById('stock-initial').value);
+            const quantiteEnlever = parseFloat(document.getElementById('quantite-enlever').value);
+
+            if (stockInitial && !stock) {
+                stock = stockInitial;
+            }
+
+            if (quantiteEnlever) {
+                if (quantiteEnlever > stock) {
+                    document.getElementById('resultat').innerText = "Quantité demandée dépasse le stock disponible.";
+                } else {
+                    stock -= quantiteEnlever;
+                    bouteillesUtilisees += Math.floor(quantiteEnlever / 12);
+                    const kgRestants = stock % 12;
+
+                    document.getElementById('resultat').innerText = `${quantiteEnlever} kg de gaz enlevés. Stock restant: ${stock.toFixed(2)} kg. Kg restants: ${kgRestants.toFixed(2)} kg.`;
+                    document.getElementById('bouteilles-utilisees').innerText = `Nombre de bouteilles de 12 kg utilisées: ${bouteillesUtilisees}`;
+
+                    const historyEntry = `${quantiteEnlever} kg enlevés à ${new Date().toLocaleString()}`;
+                    historyEntries.push(historyEntry);
+                    localStorage.setItem('history', JSON.stringify(historyEntries));
+
+                    displayHistory();
+                }
+            }
+        }
+
+        function displayHistory() {
+            const storedHistory = JSON.parse(localStorage.getItem('history')) || [];
+            const historyContainer = document.getElementById('history-entries');
+            historyContainer.innerHTML = '';
+
+            storedHistory.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'history-entry';
+                div.textContent = entry;
+                historyContainer.appendChild(div);
+            });
+        }
+
+        window.onload = displayHistory;
+    </script>
+</body>
+</html>
